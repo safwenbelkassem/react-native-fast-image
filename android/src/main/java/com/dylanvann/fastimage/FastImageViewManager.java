@@ -125,26 +125,30 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl> imple
         view.setScaleType(scaleType);
     }
 
-    @Override
-    public void onDropViewInstance(FastImageViewWithUrl view) {
+    
+   @Override
+    public void onDropViewInstance(final FastImageViewWithUrl view) {
         // This will cancel existing requests.
-        if (requestManager != null) {
-            requestManager.clear(view);
-        }
+        view.setOnDetachedFromWindowListener(new FastImageViewWithUrl.OnDetachedFromWindowListener() {
+            @Override
+            public void onDetached() {
+                if (requestManager != null) {
+                    requestManager.clear(view);
+                }
 
-        if (view.glideUrl != null) {
-            final String key = view.glideUrl.toString();
-            FastImageOkHttpProgressGlideModule.forget(key);
-            List<FastImageViewWithUrl> viewsForKey = VIEWS_FOR_URLS.get(key);
-            if (viewsForKey != null) {
-                viewsForKey.remove(view);
-                if (viewsForKey.size() == 0) VIEWS_FOR_URLS.remove(key);
+                if (view.glideUrl != null) {
+                    final String key = view.glideUrl.toString();
+                    FastImageOkHttpProgressGlideModule.forget(key);
+                    List<FastImageViewWithUrl> viewsForKey = VIEWS_FOR_URLS.get(key);
+                    if (viewsForKey != null) {
+                        viewsForKey.remove(view);
+                        if (viewsForKey.size() == 0) VIEWS_FOR_URLS.remove(key);
+                    }
+                }
             }
-        }
-
+        });
         super.onDropViewInstance(view);
     }
-
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
@@ -224,3 +228,4 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl> imple
 
     }
 }
+
